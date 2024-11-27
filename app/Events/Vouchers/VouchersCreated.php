@@ -19,8 +19,8 @@ class VouchersCreated
      * @param User $user
      */
     public function __construct(
-        public readonly array $vouchers,
+        public readonly array $success,
+        public readonly array $failed,
         public readonly User $user
-    ) {
-    }
+    ) {}
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Vouchers;
 
 use App\Http\Resources\Vouchers\VoucherResource;
+use App\Jobs\ProcessVouchersJob;
 use App\Services\VoucherService;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -11,9 +12,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class StoreVouchersHandler
 {
-    public function __construct(private readonly VoucherService $voucherService)
-    {
-    }
+    public function __construct(private readonly VoucherService $voucherService) {}
 
     public function __invoke(Request $request): JsonResponse|AnonymousResourceCollection
     {
@@ -30,9 +29,9 @@ class StoreVouchersHandler
             }
 
             $user = auth()->user();
-            $vouchers = $this->voucherService->storeVouchersFromXmlContents($xmlContents, $user);
+            ProcessVouchersJob::dispatch($xmlContents, $user);
 
-            return VoucherResource::collection($vouchers);
+            return response()->json(['message' => 'Los comprobantes están siendo procesados en segundo plano.'], 202);
         } catch (Exception $exception) {
             return response()->json([
                 'message' => $exception->getMessage(),
